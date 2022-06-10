@@ -1,0 +1,137 @@
+.jquery-uploader * {
+    box-sizing: border-box;
+}
+
+.jquery-uploader {
+    display: block;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.jquery-uploader-preview-container {
+    padding: 10px;
+    height: 100%;
+    width: 100%;
+    background-color: white;
+}
+
+
+.jquery-uploader-card {
+    vertical-align: middle;
+    width: 120px;
+    height: 120px;
+    border: 1px solid rgba(103, 103, 103, 0.39);
+    padding: 5px;
+    margin: 5px;
+    display: inline-block;
+}
+
+.jquery-uploader-select-card {
+    vertical-align: middle;
+    width: 120px;
+    height: 120px;
+    border: 1px dashed rgba(103, 103, 103, 0.39);
+    padding: 5px;
+    margin: 5px;
+    display: inline-block;
+}
+
+.jquery-uploader-select-card:hover {
+    border-color: #8989f8;
+    cursor: pointer;
+}
+
+.jquery-uploader-preview-main {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.jquery-uploader-preview-main > img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+.jquery-uploader-select {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.jquery-uploader-select a, i {
+    color: black;
+}
+
+.jquery-uploader-select > .upload-button {
+    height: 50px;
+}
+
+.jquery-uploader-preview-action {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 2;
+    opacity: 0;
+    background-color: rgba(0, 0, 0, 0.36);
+}
+
+.jquery-uploader-preview-action i {
+    color: white;
+}
+
+.jquery-uploader-preview-action:hover {
+    opacity: 100;
+}
+
+.jquery-uploader-preview-action > ul {
+    margin: 0;
+    padding-left: 0;
+    text-align: center;
+    padding-top: 40px;
+    list-style: none;
+}
+
+.jquery-uploader-preview-action > ul > li {
+    cursor: pointer;
+    padding: 5px;
+}
+
+.jquery-uploader-preview-action > ul > li:hover {
+    transform: scale(1.3);
+}
+
+.jquery-uploader-preview-progress {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.2);
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+}
+
+.jquery-uploader-preview-progress > .progress-mask {
+    position: absolute;
+    top: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+
+}
+
+.jquery-uploader-preview-progress > .progress-loading {
+    display: flex;
+    justify-content: center;
+    height: 100%;
+    align-items: center;
+}
+
+.jquery-uploader-preview-progress > .progress-loading > i {
+    color: white;
+}

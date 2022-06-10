@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+    <title>jquery uploader demo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" href="./css/jquery.uploader.css">
+    <style rel="stylesheet">
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>jquery-uploader</h1>
+    <blockquote>
+        一个简单的 query 文件上传，目前仅适用图片
+    </blockquote>
+    <ul>
+        <li>
+            <i>demo1 多文件上传</i>
+            <input type="text" id="demo1" value="">
+        </li>
+        <li>
+            <i>demo2 单文件上传</i>
+            <input type="text" id="demo2" value="">
+        </li>
+        <li>
+            <i>demo3 默认值</i>
+            <input type="text" id="demo3" value="">
+        </li>
+    </ul>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="./dist/jquery.uploader.min.js"></script>
+<script type="application/javascript">
+    let ajaxConfig = {
+        ajaxRequester: function (config, uploadFile, pCall, sCall, eCall) {
+            let progress = 0
+            let interval = setInterval(() => {
+                progress += 10;
+                pCall(progress)
+                if (progress >= 100) {
+                    clearInterval(interval)
+                    const windowURL = window.URL || window.webkitURL;
+                    sCall({
+                        data: windowURL.createObjectURL(uploadFile.file)
+                    })
+                    // eCall("上传异常")
+                }
+            }, 300)
+        }
+    }
+    $("#demo1").uploader({multiple: true, ajaxConfig: ajaxConfig})
+    $("#demo2").uploader({ajaxConfig: ajaxConfig})
+    $("#demo3").uploader({
+        multiple: true,
+        defaultValue: [
+            {
+                name: "defa",
+                url: "https://s2.loli.net/2022/05/07/GXrnozOj86pbFyl.jpg"
+            }, {
+                name: "我的世界",
+                url: "https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/img/GrassBlock_HighRes.png"
+            }
+        ],
+        ajaxConfig: ajaxConfig
+    })
+</script>
+</body>
+</html>
