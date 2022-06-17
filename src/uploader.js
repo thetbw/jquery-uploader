@@ -11,6 +11,10 @@ import {
     EVENT_UPLOAD_ERROR
 } from "./constants"
 
+
+/**
+ * 文件card选择器
+ */
 const CARD_SELECTOR = {
     ACTION_DIV: ".jquery-uploader-preview-action",
     ACTION_DELETE: ".jquery-uploader-preview-action .file-delete",
@@ -18,6 +22,45 @@ const CARD_SELECTOR = {
     PROGRESS_MASK: ".jquery-uploader-preview-progress > .progress-mask",
     PREVIEW_IMAGE: ".jquery-uploader-preview-main > img"
 }
+
+/**
+ * 文件类型，用于根据类型来展示预览
+ */
+const FILE_TYPE = {
+    IMAGE: "image",
+    OTHER: "other"
+}
+
+const IMAGE_EXT = [
+    "jpg", "png", "jpeg", "gif", "bmp"
+]
+
+const BLOB_UTILS = function () {
+    const windowURL = window.URL || window.webkitURL;
+    /**
+     * blob缓存
+     * @type {Map<String, Blob>}
+     */
+    let dict = new Map()
+    return {
+        // 创建blob url
+        createBlobUrl: function (blob) {
+            let blobUrl = windowURL.createObjectURL(blob)
+            dict.set(blobUrl, blob)
+            return blobUrl
+        },
+        // 销毁 blob 对象
+        revokeBlobUrl: function (url) {
+            windowURL.revokeObjectURL(url)
+            dict.delete(url)
+        },
+        //根据 url 获取 blob对象
+        getBlobFromUrl: function (url) {
+            return dict.get(url)
+        }
+    }
+}()
+
 
 function uuid() {
     let s = [];
@@ -31,12 +74,33 @@ function uuid() {
     return s.join("");
 }
 
+function getFileTypesFromUrl(url) {
+    if (!url || url.length === 0) {
+        return FILE_TYPE.OTHER
+    }
+    if (url.startsWith("blob")) {
+        let blob = BLOB_UTILS.getBlobFromUrl(url)
+        if (blob.type.indexOf("image") !== -1) {
+            return FILE_TYPE.IMAGE
+        }
+        return FILE_TYPE.OTHER
+    } else {
+        for (let ext of IMAGE_EXT) {
+            if (url.endsWith(ext)) {
+                return FILE_TYPE.IMAGE
+            }
+        }
+        return FILE_TYPE.OTHER
+    }
+}
+
 /**
  * 需要上传的文件
  */
 class UploaderFile {
-    constructor(id, name, url, status, file, $ele) {
+    constructor(id, type, name, url, status, file, $ele) {
         this.id = id
+        this.type = type
         this.name = name
         this.url = url
         this.status = status
@@ -112,6 +176,62 @@ export default class Uploader {
     }
 
     /**
+     * 创建上传文件
+     * @param id 文件id
+     * @param url 文件url
+     * @param type 文件的类型，如果为空，将从url解析
+     * @return {*|jQuery|HTMLElement}
+     */
+    createFileCardEle(id, url, type) {
+        type = type || getFileTypesFromUrl(url)
+        let filePreview = type === FILE_TYPE.IMAGE ? `<img alt="preview" class="files_img" src="${url}"/>` : `<div class="file_other"></div>`
+        let $previewCard = $(
+            `<div class="jquery-uploader-card" id="${id}">
+                    <div class="jquery-uploader-preview-main">
+                        <div class="jquery-uploader-preview-action">
+                            <ul>
+                               <!-- <li class="file-detail"><i class="fa fa-eye"></i></li> !-->
+                                <li class="file-delete"><i class="fa fa-trash-o"></i></li>
+                            </ul>
+                        </div>
+                        <div class="jquery-uploader-preview-progress">
+                            <div class="progress-mask"></div>
+                            <div class="progress-loading">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                        ${filePreview}
+                    </div>
+                 </div>`)
+        $previewCard.find(CARD_SELECTOR.PROGRESS_DIV).hide()
+        return $previewCard
+    }
+
+    /**
+     * 警告样式
+     * @param $ele
+     */
+    fileCardWaring($ele) {
+        $ele.css("box-shadow", "0px 0px 3px 1px #f8ac59 inset")
+    }
+
+    /**
+     * error 样式
+     * @param $ele 错误样式
+     */
+    fileCardError($ele) {
+        $ele.css("box-shadow", "0px 0px 3px 1px #ed5565 inset")
+    }
+
+    /**
+     * 默认样式
+     * @param $ele 文件元素
+     */
+    fileCardDefault($ele) {
+        $ele.css("box-shadow", "")
+    }
+
+    /**
      * 手动上传
      */
     upload() {
@@ -177,8 +297,10 @@ export default class Uploader {
         } else if (value) {
             let links = this.options.multiple ? value.split(",") : [value];
             links.forEach((link, index) => {
+                let type = getFileTypesFromUrl(link)
                 defaultFiles.push({
                     name: "default" + index,
+                    type: type,
                     url: link,
                 })
             })
@@ -187,20 +309,10 @@ export default class Uploader {
 
         defaultFiles.forEach((file) => {
             let id = uuid();
-            let $previewCard = $(
-                `<div class="jquery-uploader-card" id="${id}">
-                    <div class="jquery-uploader-preview-main">
-                        <div class="jquery-uploader-preview-action">
-                            <ul>
-                                <li class="file-delete"><i class="fa fa-trash-o"></i></li>
-                            </ul>
-                        </div>
-                        <img src="${file.url}" alt="preview"/>
-                    </div>
-                 </div>`)
-            $previewCard.find(CARD_SELECTOR.ACTION_DELETE).on("click", this.handleFileDelete.bind(this))
+            let $previewCard = this.createFileCardEle(id, file.url, file.type)
             this.files.push({
                 id: id,
+                type: file.type,
                 name: file.name,
                 url: file.url,
                 status: Uploader.fileStatus.initial,
@@ -234,6 +346,10 @@ export default class Uploader {
             this.onFileUploadError(file, "数据转换异常")
             return
         }
+        if (file.url && file.url.startsWith("blob")) {
+            //销毁旧的资源
+            BLOB_UTILS.revokeBlobUrl(file.url)
+        }
         file.name = convertedRes.name || file.name
         file.url = convertedRes.url
         file.status = Uploader.fileStatus.uploaded
@@ -246,9 +362,8 @@ export default class Uploader {
     onFileUploadError(file, errorMsg) {
         this.$originEle.trigger(EVENT_UPLOAD_ERROR, file, errorMsg)
         file.$ele.find(CARD_SELECTOR.PROGRESS_DIV).hide()
-        file.$ele.find(CARD_SELECTOR.ACTION_DIV).show()
         file.$ele.attr("title", errorMsg)
-        file.$ele.css("border-color", "red")
+        this.fileCardError(file.$ele)
     }
 
     //选择文件
@@ -261,34 +376,19 @@ export default class Uploader {
 
     //添加文件
     handleFileAdd(files) {
-        const windowURL = window.URL || window.webkitURL;
         let addFiles = []
         for (let i = 0; i < files.length; i++) {
             let file = files[i]
-            let imageUrl = file.type.indexOf("image") !== -1 ? windowURL.createObjectURL(file) : null
+            let type = file.type.indexOf("image") !== -1 ? FILE_TYPE.IMAGE : FILE_TYPE.OTHER
+            let url = BLOB_UTILS.createBlobUrl(file)
             let id = uuid()
-            let $previewCard = $(
-                `<div class="jquery-uploader-card" id="${id}">
-                    <div class="jquery-uploader-preview-main">
-                        <div class="jquery-uploader-preview-action">
-                            <ul>
-                                <li class="file-delete"><i class="fa fa-trash-o"></i></li>
-                            </ul>
-                        </div>
-                        <div class="jquery-uploader-preview-progress">
-                            <div class="progress-mask"></div>
-                            <div class="progress-loading">
-                                <i class="fa fa-spinner fa-spin"></i>
-                            </div>
-                        </div>
-                        <img src="${imageUrl}"/>
-                    </div>
-                 </div>`)
-            $previewCard.find(".jquery-uploader-preview-action").hide()
+            let $previewCard = this.createFileCardEle(id, url, type)
+            this.fileCardWaring($previewCard)
             addFiles.push({
                 id: id,
+                type: type,
                 name: file.name,
-                url: imageUrl,
+                url: type,
                 status: Uploader.fileStatus.selected,
                 file: file,
                 $ele: $previewCard
@@ -314,6 +414,8 @@ export default class Uploader {
         waitUploadFiles.forEach(file => {
             this.$originEle.trigger(EVENT_UPLOADING, file)
             try {
+                this.fileCardDefault(file.$ele)
+                file.$ele.find(CARD_SELECTOR.PROGRESS_DIV).show()
                 this.options.ajaxConfig.ajaxRequester(
                     this.options.ajaxConfig,
                     file,
@@ -348,6 +450,9 @@ export default class Uploader {
             }
         )
         let removedFile = this.files.splice(index, 1)
+        if (removedFile.url) {
+            BLOB_UTILS.revokeBlobUrl(removedFile.url)
+        }
         this.$originEle.trigger(EVENT_FILE_REMOVE, ...removedFile)
         this.refreshValue()
         this.refreshPreviewFileList()

@@ -47,10 +47,16 @@
     width: 100%;
 }
 
-.jquery-uploader-preview-main > img {
+.jquery-uploader-preview-main > .files_img {
     object-fit: cover;
     height: 100%;
     width: 100%;
+}
+.jquery-uploader-preview-main > .file_other{
+    height: 100%;
+    width: 100%;
+    background-size: cover;
+    background-image:url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNjU1NDM1NzYzMDI4IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjU5MjMiIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+PGRlZnM+PHN0eWxlIHR5cGU9InRleHQvY3NzIj48L3N0eWxlPjwvZGVmcz48cGF0aCBkPSJNNjc3LjMxOTIyNyA4MjMuMzY2ODM2SDI3OS4xNzgwMjZWMTI4Ljc1NTIzOWg1MjAuODU0NTI3djU3Mi45Mzk5OHoiIGZpbGw9IiM3Q0IzNDIiIHAtaWQ9IjU5MjQiPjwvcGF0aD48cGF0aCBkPSJNMzY1Ljg0ODIyIDUyOC4xNDY0OUg2OTUuODYxNjQ4djM0LjU4NDc0MUgzNjUuODQ4MjJ6TTM2NS44NDgyMiAzODkuMTgyNTAzSDY5NS44NjE2NDh2MzQuNzkzMDgySDM2NS44NDgyMnpNMzY1Ljg0ODIyIDI1MC4yMTg1MTVINjk1Ljg2MTY0OHYzNC43OTMwODJIMzY1Ljg0ODIyeiIgZmlsbD0iIzlGQThEQSIgcC1pZD0iNTkyNSI+PC9wYXRoPjxwYXRoIGQ9Ik02NDIuMzE3ODAzIDg5NS4yNDQ3NjFIMjIzLjk2NzQ0N3YtNzI5LjE5NjMzOGg1NDcuMTA1NTk1djYwMS42OTExNXoiIGZpbGw9IiM5Q0NDNjUiIHAtaWQ9IjU5MjYiPjwvcGF0aD48cGF0aCBkPSJNMzE1LjIyMTE2IDU4NS40NDA0ODhoMzQ2LjI2NDA4OXYzNi40NTk4MTdIMzE1LjIyMTE2ek0zMTUuMjIxMTYgNDM5LjYwMTIyMWgzNDYuMjY0MDg5djM2LjQ1OTgxN0gzMTUuMjIxMTZ6TTMxNS4yMjExNiAyOTMuNzYxOTUzaDM0Ni4yNjQwODl2MzYuNDU5ODE3SDMxNS4yMjExNnpNNjU2LjY5MzM4OCA3NzIuMTE0NzUxaDEwOS4zNzk0NWwtMTA5LjM3OTQ1IDEwOS4zNzk0NXoiIGZpbGw9IiM3Q0IzNDIiIHAtaWQ9IjU5MjciPjwvcGF0aD48L3N2Zz4=');
 }
 
 .jquery-uploader-select {
@@ -73,6 +79,7 @@
 
 .jquery-uploader-preview-action {
     position: absolute;
+    text-align: center;
     top: 0;
     left: 0;
     height: 100%;
@@ -96,11 +103,13 @@
     text-align: center;
     padding-top: 40px;
     list-style: none;
+    display: inline-block;
 }
 
 .jquery-uploader-preview-action > ul > li {
     cursor: pointer;
     padding: 5px;
+    float: left;
 }
 
 .jquery-uploader-preview-action > ul > li:hover {

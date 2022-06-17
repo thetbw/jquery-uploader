@@ -5,15 +5,24 @@
 ```javascript
 //文件格式为
 class UploaderFile {
-    constructor(id, name, url, status, file, $ele) {
+    constructor(id, type, name, url, status, file, $ele) {
+        //文件唯一id，自动生成
         this.id = id
+        //文件类型，目前只支持 image,other，如果type为空，type将根据url推断
+        this.type = type
+        //文件名称，暂时没别的用处
         this.name = name
+        //文件url,选择文件后是 blob链接，上传成功后会被替换成上传链接
         this.url = url
+        //文件状态，暂时不建议外部操作
         this.status = status
+        //文件 file 对象
         this.file = file
+        //文件元素
         this.$ele = $ele
     }
 }
+
 Uploader.config = {
     /**
      *  构建请求参数，
@@ -75,31 +84,36 @@ Uploader.config = {
             }
         })
     }
-    
+
 }
 
 const defaultOptions = {
-  mode: Uploader.mode.url,
-  //是否多选
-  multiple: false,
-  //默认值，如果该值不为null,将使用该值来作为 默认值，否则使用 input 的value值
-  defaultValue: null,
-  //展示的父元素，默认为当前元素同级
-  parent: null,
-  //允许的文件后缀，暂时不支持
-  allowFileExt: "*",
-  //是否自动上传
-  autoUpload: true,
-  //上传配置，仅当使用默认上传的时候启用
-  ajaxConfig: {
-    url: "",
-    method: "post",
-    //负责构建请求参数 当使用子定义 ajaxRequester 时，这个也可以忽略
-    paramsBuilder: Uploader.config.paramsBuilder,
-    //负责进行请求
-    ajaxRequester: Uploader.config.ajaxRequester,
-    //负责转换请求的数据
-    responseConverter: Uploader.config.responseConverter
-  }
+    mode: Uploader.mode.url,
+    //是否多选
+    multiple: false,
+    /**
+     * 默认值，如果该值不为null,将使用该值来作为 默认值，否则使用 input 的value值
+     * 格式见上面 UploaderFile
+     * 需要提供 至少 url 一个属性
+     * 如果 type为空，type将根据url推断
+     */
+    defaultValue: null,
+    //展示的父元素，默认为当前元素同级
+    parent: null,
+    //允许的文件后缀，暂时不支持
+    allowFileExt: "*",
+    //是否自动上传
+    autoUpload: true,
+    //上传配置，仅当使用默认上传的时候启用
+    ajaxConfig: {
+        url: "",
+        method: "post",
+        //负责构建请求参数 当使用子定义 ajaxRequester 时，这个也可以忽略
+        paramsBuilder: Uploader.config.paramsBuilder,
+        //负责进行请求
+        ajaxRequester: Uploader.config.ajaxRequester,
+        //负责转换请求的数据
+        responseConverter: Uploader.config.responseConverter
+    }
 }
 ```
