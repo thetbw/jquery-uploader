@@ -18,6 +18,7 @@ import {
 const CARD_SELECTOR = {
     ACTION_DIV: ".jquery-uploader-preview-action",
     ACTION_DELETE: ".jquery-uploader-preview-action .file-delete",
+    ACTION_VIEW: ".jquery-uploader-preview-action .file-view",
     PROGRESS_DIV: ".jquery-uploader-preview-progress",
     PROGRESS_MASK: ".jquery-uploader-preview-progress > .progress-mask",
     PREVIEW_IMAGE: ".jquery-uploader-preview-main > img"
@@ -61,6 +62,9 @@ const BLOB_UTILS = function () {
     }
 }()
 
+function exitsViewerJs() {
+    return Viewer && typeof (Viewer) == "function"
+}
 
 function uuid() {
     let s = [];
@@ -119,6 +123,7 @@ export default class Uploader {
         this.$originEle = $element
         let globalDefaultOptions = window[DEFAULT_OPTIONS] ? window[DEFAULT_OPTIONS] : {}
         this.options = $.extend(true, {}, Uploader.defaults, globalDefaultOptions, options);
+        this.id = uuid()
         /**
          * 待上传的文件
          * @type {UploaderFile[]}
@@ -139,6 +144,17 @@ export default class Uploader {
         }
         if (this.$originEle.attr("type") !== "text" && this.$originEle.attr("type")) {
             throw `url模式下，元素的类型只能为 text,不能为 ${this.$originEle.attr("type")}`
+        }
+        //判断只读模式
+        if (this.$originEle[0].hasAttribute("readonly")
+            || this.$originEle[0].hasAttribute("disabled")
+            || this.options.readonly) {
+            this.readonly = true
+            if (!this.$originEle.val()) {
+                console.error("只读模式的值不能为空")
+            }
+        } else {
+            this.readonly = false
         }
     }
 
@@ -183,15 +199,24 @@ export default class Uploader {
      * @return {*|jQuery|HTMLElement}
      */
     createFileCardEle(id, url, type) {
-        type = type || getFileTypesFromUrl(url)
         let filePreview = type === FILE_TYPE.IMAGE ? `<img alt="preview" class="files_img" src="${url}"/>` : `<div class="file_other"></div>`
+
+        //判断当前是否支持预览
+        let viewerHtml = "";
+        let deleteHtml = ""
+        if (exitsViewerJs() && type === FILE_TYPE.IMAGE) {
+            viewerHtml = `<li class="file-view"><i class="fa fa-eye"></i></li>`
+        }
+        if (!this.readonly) {
+            deleteHtml = `<li class="file-delete"><i class="fa fa-trash-o"></i></li>`
+        }
         let $previewCard = $(
             `<div class="jquery-uploader-card" id="${id}">
                     <div class="jquery-uploader-preview-main">
                         <div class="jquery-uploader-preview-action">
                             <ul>
-                               <!-- <li class="file-detail"><i class="fa fa-eye"></i></li> !-->
-                                <li class="file-delete"><i class="fa fa-trash-o"></i></li>
+                                ${viewerHtml}
+                                ${deleteHtml}
                             </ul>
                         </div>
                         <div class="jquery-uploader-preview-progress">
@@ -283,8 +308,9 @@ export default class Uploader {
         this.files.forEach(file => {
             this.$uploaderContainer.append(file.$ele)
             file.$ele.find(CARD_SELECTOR.ACTION_DELETE).on("click", this.handleFileDelete.bind(this))
+            file.$ele.find(CARD_SELECTOR.ACTION_VIEW).on("click", this.handleFileView.bind(this))
         })
-        if (this.options.multiple || this.files.length === 0) {
+        if ((this.options.multiple || this.files.length === 0) && !this.readonly) {
             this.$uploaderContainer.append(this.$selectCard)
             this.$selectCard.on("click", this.handleFileSelect.bind(this))
         }
@@ -309,6 +335,9 @@ export default class Uploader {
 
         defaultFiles.forEach((file) => {
             let id = uuid();
+            if (!file.type) {
+                file.type = getFileTypesFromUrl(file.url)
+            }
             let $previewCard = this.createFileCardEle(id, file.url, file.type)
             this.files.push({
                 id: id,
@@ -457,6 +486,34 @@ export default class Uploader {
         this.refreshValue()
         this.refreshPreviewFileList()
     }
+
+    handleFileView(event) {
+        let $selectCard = $(event.target).parents(".jquery-uploader-card")
+        let id = $selectCard[0].id
+        let uploaderFile = null
+        //移除旧的图片容器
+        this.viewer && this.viewer.destroy()
+        $("#viewer--" + this.id).remove()
+        //添加新的
+        let $imageViewContainer = $(`<div style="display: none" id="viewer-${this.id}"></div>`)
+        this.files.forEach((file) => {
+                if (file.id === id) {
+                    uploaderFile = file
+                }
+                if (file.type === FILE_TYPE.IMAGE) {
+                    $imageViewContainer.append($(`<img id="img-${file.id}" src="${file.url}" alt="${file.name}"/>`))
+                }
+            }
+        )
+        if (!uploaderFile) {
+            throw "error,file data not found"
+        }
+        $(document.body).append($imageViewContainer)
+        this.viewer = new Viewer(document.getElementById("viewer-" + this.id))
+        $("#img-" + uploaderFile.id).click()
+
+
+    }
 }
 
 Uploader.config = {
@@ -555,6 +612,14 @@ Uploader.fileStatus = {
  * 默认参数
  */
 Uploader.defaults = {
+    /**
+     * 是否为只读模式,默认 false
+     * 满足一下其中一个条件，则为只读模式，否则为正常模式 (只读模式值不能为空)
+     * 1 元素有 `readonly` 属性
+     * 2 元素有 `disabled` 属性
+     * 3 option 中 readonly 为 true
+     */
+    readonly: false,
     mode: Uploader.mode.url,
     //是否多选
     multiple: false,

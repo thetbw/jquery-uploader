@@ -1,10 +1,11 @@
 <!doctype html>
-<html>
+<html lang="zh-cn">
 <head>
     <title>jquery uploader demo</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fengyuanchen/viewerjs@v1.10.5/dist/viewer.min.css">
     <link rel="stylesheet" href="./css/jquery.uploader.css">
     <style rel="stylesheet">
         .container {
@@ -33,9 +34,14 @@
             <i>demo3 默认值</i>
             <input type="text" id="demo3" value="">
         </li>
+        <li>
+            <i>demo4 只读模式</i>
+            <input type="text" id="demo4" readonly value="">
+        </li>
     </ul>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fengyuanchen/viewerjs@v1.10.5/dist/viewer.min.js"></script>
 <script src="./dist/jquery.uploader.min.js"></script>
 <script type="application/javascript">
     let ajaxConfig = {
@@ -55,9 +61,23 @@
             }, 300)
         }
     }
-    $("#demo1").uploader({multiple: true, ajaxConfig: ajaxConfig,autoUpload: false})
+    $("#demo1").uploader({multiple: true, ajaxConfig: ajaxConfig, autoUpload: false})
     $("#demo2").uploader({ajaxConfig: ajaxConfig})
     $("#demo3").uploader({
+        multiple: true,
+        defaultValue: [
+            {
+                name: "defa",
+                url: "https://s2.loli.net/2022/05/07/GXrnozOj86pbFyl.jpg"
+            }, {
+                name: "我的世界",
+                url: "https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/img/GrassBlock_HighRes.png"
+            }
+        ],
+        ajaxConfig: ajaxConfig
+    })
+    $("#demo4").uploader({
+        readonly: true,
         multiple: true,
         defaultValue: [
             {

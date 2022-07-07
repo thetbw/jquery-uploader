@@ -15,22 +15,27 @@
 * jquery *
 * font-awesome 4.7^
 
+可选依赖
+
+* [`viewerjs`](https://github.com/fengyuanchen/viewerjs) 用于支持图片放大预览
+
 ### 使用
 
 基础使用
 ```javascript
 $("#input").uploader({
-    multiple:true,
-    ajaxConfig:{
-        url:"/upload"
+    multiple: true,
+    ajaxConfig: {
+        url: "/upload"
     }
 })
 
 ```
+
 * [options](./doc/options.md)
 * [events](./doc/events.md)
 * [methods](./doc/methods.md)
 
 ### 待完善
+
 * 小图预览，其他类型会显示默认图标
-* 增加放大预览
