@@ -63,7 +63,7 @@ const BLOB_UTILS = function () {
 }()
 
 function exitsViewerJs() {
-    return Viewer && typeof (Viewer) == "function"
+    return window.Viewer && typeof (window.Viewer) == "function"
 }
 
 function uuid() {
@@ -509,7 +509,7 @@ export default class Uploader {
             throw "error,file data not found"
         }
         $(document.body).append($imageViewContainer)
-        this.viewer = new Viewer(document.getElementById("viewer-" + this.id))
+        this.viewer = new window.Viewer(document.getElementById("viewer-" + this.id))
         $("#img-" + uploaderFile.id).click()
 
 
