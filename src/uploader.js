@@ -150,7 +150,7 @@ export default class Uploader {
             || this.$originEle[0].hasAttribute("disabled")
             || this.options.readonly) {
             this.readonly = true
-            if (!this.$originEle.val()) {
+            if (!this.$originEle.val() && (!this.options.defaultValue || this.options.defaultValue.length === 0)) {
                 console.error("只读模式的值不能为空")
             }
         } else {
@@ -390,6 +390,7 @@ export default class Uploader {
     // 文件上传失败
     onFileUploadError(file, errorMsg) {
         this.$originEle.trigger(EVENT_UPLOAD_ERROR, file, errorMsg)
+        file.status = Uploader.fileStatus.error
         file.$ele.find(CARD_SELECTOR.PROGRESS_DIV).hide()
         file.$ele.attr("title", errorMsg)
         this.fileCardError(file.$ele)
@@ -417,7 +418,7 @@ export default class Uploader {
                 id: id,
                 type: type,
                 name: file.name,
-                url: type,
+                url: url,
                 status: Uploader.fileStatus.selected,
                 file: file,
                 $ele: $previewCard
@@ -493,7 +494,7 @@ export default class Uploader {
         let uploaderFile = null
         //移除旧的图片容器
         this.viewer && this.viewer.destroy()
-        $("#viewer--" + this.id).remove()
+        $("#viewer-" + this.id).remove()
         //添加新的
         let $imageViewContainer = $(`<div style="display: none" id="viewer-${this.id}"></div>`)
         this.files.forEach((file) => {
