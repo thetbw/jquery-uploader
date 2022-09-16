@@ -265,6 +265,42 @@ export default class Uploader {
     }
 
     /**
+     * 根据id来删除文件
+     * @param ids 要删除的id
+     * @return {*[]} 删除的文件
+     */
+    removeFiles(...ids) {
+        if (!ids || ids.length === 0) {
+            console.error("删除文件的请求参数有误")
+            return []
+        }
+        let deletedFiles = []
+        for (let id of ids) {
+            let index = -1;
+            for (let i = 0; i < this.uploadFiles().length; i++) {
+                if (this.files[i].id === id) {
+                    index = i;
+                }
+            }
+            if (index === -1) {
+                console.error(`删除错误 id ${id} 不存在`)
+                continue
+            } else {
+                let deleteFiles = this.files.splice(index, 1);
+                if (deleteFiles[0].url) {
+                    BLOB_UTILS.revokeBlobUrl(deleteFiles[0].url)
+                }
+                deletedFiles.push(deleteFiles[0])
+            }
+        }
+
+        this.$originEle.trigger(EVENT_FILE_REMOVE, ...deletedFiles)
+        this.refreshPreviewFileList()
+        this.refreshValue()
+        return deletedFiles
+    }
+
+    /**
      * 清除所有文件
      */
     clean() {
@@ -509,8 +545,8 @@ export default class Uploader {
             }
         )
         let removedFile = this.files.splice(index, 1)
-        if (removedFile.url) {
-            BLOB_UTILS.revokeBlobUrl(removedFile.url)
+        if (removedFile[0].url) {
+            BLOB_UTILS.revokeBlobUrl(removedFile[0].url)
         }
         this.$originEle.trigger(EVENT_FILE_REMOVE, ...removedFile)
         this.refreshValue()
