@@ -41,6 +41,11 @@
     cursor: pointer;
 }
 
+.jquery-uploader-select-card.dragover {
+    border-color: #8989f8;
+    background-color: #ddddef;
+}
+
 .jquery-uploader-preview-main {
     position: relative;
     height: 100%;

@@ -313,6 +313,20 @@ export default class Uploader {
         if ((this.options.multiple || this.files.length === 0) && !this.readonly) {
             this.$uploaderContainer.append(this.$selectCard)
             this.$selectCard.on("click", this.handleFileSelect.bind(this))
+
+            //拖动处理
+            this.$selectCard.on("dragover", e => {
+                e.originalEvent.preventDefault()
+                this.$selectCard.addClass("dragover")
+            })
+            this.$selectCard.on("dragenter", () => this.$selectCard.addClass("dragover"))
+            this.$selectCard.on("dragleave", () => this.$selectCard.removeClass("dragover"))
+            this.$selectCard.on("dragend", () => this.$selectCard.removeClass("dragover"))
+            this.$selectCard.on("drop", (e) => {
+                e.originalEvent.preventDefault()
+                this.$selectCard.removeClass("dragover")
+                this.handleFileDrop(e.originalEvent)
+            })
         }
     }
 
@@ -404,8 +418,23 @@ export default class Uploader {
             }).click()
     }
 
+    //拖动文件
+    handleFileDrop(event) {
+        if (event.dataTransfer.files.length === 0) {
+            alert("请拖动文件来上传")
+            return
+        }
+        this.handleFileAdd(event.dataTransfer.files)
+    }
+
     //添加文件
     handleFileAdd(files) {
+        if (!files || files.length === 0) {
+            return
+        }
+        if (!this.options.multiple) {
+            files = [files[0]]
+        }
         let addFiles = []
         for (let i = 0; i < files.length; i++) {
             let file = files[i]
