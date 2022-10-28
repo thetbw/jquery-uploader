@@ -1,6 +1,6 @@
 # jquery-uploader
 
-[演示](./index.html)
+[演示](https://thetbw.github.io/jquery-uploader/)
 
 ![](https://s2.loli.net/2022/06/10/hPoU48TqBXZs7GY.png)
 
