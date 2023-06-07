@@ -3,7 +3,7 @@
 默认的选项
 
 ```javascript
-//文件格式为
+//file文件定义
 class UploaderFile {
     constructor(id, type, name, url, status, file, $ele) {
         //文件唯一id，自动生成
@@ -100,8 +100,10 @@ const defaultOptions = {
     defaultValue: null,
     //展示的父元素，默认为当前元素同级
     parent: null,
-    //允许的文件后缀，暂时不支持
-    allowFileExt: "*",
+    //允许的文件后缀,和input accept属性差不多
+    allowFileExt: null,
+    //多选模式下，最大文件数量，为空默认不限制
+    maxLenght: null,
     //是否自动上传
     autoUpload: true,
     //上传配置，仅当使用默认上传的时候启用
