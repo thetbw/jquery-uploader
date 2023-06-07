@@ -149,12 +149,16 @@ export default class Uploader {
         if (this.$originEle[0].hasAttribute("readonly")
             || this.$originEle[0].hasAttribute("disabled")
             || this.options.readonly) {
-            this.readonly = true
+            this.options.readonly = true
             if (!this.$originEle.val() && (!this.options.defaultValue || this.options.defaultValue.length === 0)) {
                 console.error("只读模式的值不能为空")
             }
         } else {
-            this.readonly = false
+            this.options.readonly = false
+        }
+        this.options.allowFileExt = this.options.allowFileExt || this.$originEle[0].getAttribute("accept")
+        if (!this.options.maxLength) {
+            this.options.maxLength = Number.MAX_VALUE
         }
     }
 
@@ -207,7 +211,7 @@ export default class Uploader {
         if (exitsViewerJs() && type === FILE_TYPE.IMAGE) {
             viewerHtml = `<li class="file-view"><i class="fa fa-eye"></i></li>`
         }
-        if (!this.readonly) {
+        if (!this.options.readonly) {
             deleteHtml = `<li class="file-delete"><i class="fa fa-trash-o"></i></li>`
         }
         let $previewCard = $(
@@ -346,7 +350,11 @@ export default class Uploader {
             file.$ele.find(CARD_SELECTOR.ACTION_DELETE).on("click", this.handleFileDelete.bind(this))
             file.$ele.find(CARD_SELECTOR.ACTION_VIEW).on("click", this.handleFileView.bind(this))
         })
-        if ((this.options.multiple || this.files.length === 0) && !this.readonly) {
+        let canAdd = false;
+        if ((this.options.multiple || this.files.length === 0) && !this.options.readonly && (this.files.length < this.options.maxLength)) {
+            canAdd = true
+        }
+        if (canAdd) {
             this.$uploaderContainer.append(this.$selectCard)
             this.$selectCard.on("click", this.handleFileSelect.bind(this))
 
@@ -448,7 +456,7 @@ export default class Uploader {
 
     //选择文件
     handleFileSelect() {
-        $(`<input type="file" ${this.options.multiple ? 'multiple' : ''} />`)
+        $(`<input type="file" ${this.options.multiple ? 'multiple' : ''} ${this.options.allowFileExt ? 'accept="' + this.options.allowFileExt + '"' : ''}/>`)
             .on('change', (event) => {
                 this.handleFileAdd(event.target.files)
             }).click()
@@ -457,10 +465,28 @@ export default class Uploader {
     //拖动文件
     handleFileDrop(event) {
         if (event.dataTransfer.files.length === 0) {
-            alert("请拖动文件来上传")
+            alert("drop files is empty")
             return
         }
         this.handleFileAdd(event.dataTransfer.files)
+    }
+
+    checkFileExt(file) {
+        if (!this.options.allowFileExt) {
+            return true;
+        }
+        if (this.options.allowFileExt.trim() === "*") {
+            return true;
+        }
+        let filename = file.name;
+        let extName = filename.substring(filename.lastIndexOf(".")).toLowerCase();
+        let allowExts = this.options.allowFileExt.toLowerCase().split(",");
+        if (!allowExts.includes(extName)) {
+            alert("file type not allow")
+            return false
+        } else {
+            return true;
+        }
     }
 
     //添加文件
@@ -474,6 +500,10 @@ export default class Uploader {
         let addFiles = []
         for (let i = 0; i < files.length; i++) {
             let file = files[i]
+            //检查文件后缀
+            if (!this.checkFileExt(file)) {
+                continue;
+            }
             let type = file.type.indexOf("image") !== -1 ? FILE_TYPE.IMAGE : FILE_TYPE.OTHER
             let url = BLOB_UTILS.createBlobUrl(file)
             let id = uuid()
@@ -489,6 +519,11 @@ export default class Uploader {
                 $ele: $previewCard
             })
         }
+        if (this.options.maxLength && (addFiles.length + this.files.length) > this.options.maxLength) {
+            alert(`cannot exceed the maximum allowed ${this.options.maxLength} files`)
+            return;
+        }
+
         this.files.push(...addFiles)
         this.refreshPreviewFileList()
         this.$originEle.trigger(EVENT_FILE_ADD, addFiles)
@@ -693,8 +728,9 @@ Uploader.defaults = {
     defaultValue: null,
     //展示的父元素，默认为当前元素同级
     parent: null,
-    //允许的文件后缀，暂时不支持
-    allowFileExt: "*",
+    //允许的文件后缀
+    allowFileExt: null,
+    maxLength: null,
     //是否自动上传
     autoUpload: true,
     //上传配置，仅当使用默认上传的时候启用

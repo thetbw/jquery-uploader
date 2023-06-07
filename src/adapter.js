@@ -27,7 +27,7 @@ $.fn.uploader = function (options, ...args) {
 /**
  * 全局设置
  */
-$.fn.uploaderSetup = function (options) {
+$.uploaderSetup = function (options) {
     window[DEFAULT_OPTIONS] = options;
 }
 
